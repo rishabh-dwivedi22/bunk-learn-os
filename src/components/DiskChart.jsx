@@ -41,8 +41,8 @@ export default function DiskChart({ initialHead, requests, algorithm }) {
     const getY = (index) => paddingY + (index * stepY);
 
     return (
-        <div className="space-y-6">
-            <div className="w-full border border-slate-300 bg-white p-6 rounded-none">
+        <div className="space-y-6 min-w-[600px] lg:min-w-full">
+            <div className="w-full border border-slate-300 bg-white p-4 md:p-6 rounded-none">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                         Disk Head Trajectory

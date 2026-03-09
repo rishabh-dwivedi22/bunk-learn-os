@@ -28,7 +28,7 @@ export default function GanttChart({ results, revealedCount }) {
     });
 
     return (
-        <div className="w-full border border-slate-300 bg-white p-6 rounded-sm">
+        <div className="w-full min-w-[600px] border border-slate-300 bg-white p-4 md:p-6 rounded-sm">
             <h3 className="mb-6 text-xs font-semibold uppercase tracking-wider text-slate-400">
                 CPU Gantt Chart Timeline
             </h3>

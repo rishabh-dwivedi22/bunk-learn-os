@@ -27,8 +27,8 @@ export default function MemoryGrid({ partitions, requests, algorithm }) {
     const totalMemory = memory.reduce((sum, p) => sum + p.size, 0);
 
     return (
-        <div className="space-y-6">
-            <div className="w-full border border-slate-300 bg-white p-6 rounded-none">
+        <div className="space-y-6 min-w-[700px] lg:min-w-full">
+            <div className="w-full border border-slate-300 bg-white p-4 md:p-6 rounded-none">
                 <h3 className="mb-6 text-xs font-semibold uppercase tracking-wider text-slate-500">
                     RAM Layout ({totalMemory} KB)
                 </h3>
@@ -88,7 +88,7 @@ export default function MemoryGrid({ partitions, requests, algorithm }) {
 
             {/* Allocation Status Table */}
             {results.length > 0 && (
-                <div className="w-full border border-slate-300 bg-white p-6 rounded-none">
+                <div className="w-full border border-slate-300 bg-white p-4 md:p-6 rounded-none">
                     <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
                         Allocation Matrix
                     </h3>

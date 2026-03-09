@@ -132,8 +132,8 @@ export default function App() {
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-mono tracking-tight selection:bg-slate-300">
             {/* ── Brutalist Top Nav ── */}
-            <header className="flex items-center justify-between border-b-2 border-slate-900 bg-white px-6 py-4">
-                <div className="flex items-center gap-3">
+            <header className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-slate-900 bg-white px-4 py-3 md:px-6 md:py-4 gap-4 md:gap-0">
+                <div className="flex items-center gap-3 shrink-0">
                     <div className="w-8 h-8 bg-slate-900 text-white flex items-center justify-center rounded-none shadow-none">
                         <Cpu size={18} strokeWidth={2.5} />
                     </div>
@@ -143,14 +143,14 @@ export default function App() {
                 </div>
 
                 {/* State Tabs */}
-                <nav className="flex gap-2">
+                <nav className="flex overflow-x-auto whitespace-nowrap gap-2 pb-1 md:pb-0 hide-scrollbar w-full md:w-auto">
                     {TABS.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => { setActiveTab(tab.id); handleReset(); }}
                             className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-none rounded-none border-2 ${activeTab === tab.id
-                                    ? 'border-slate-900 bg-slate-900 text-white'
-                                    : 'border-transparent text-slate-600 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900'
+                                ? 'border-slate-900 bg-slate-900 text-white'
+                                : 'border-transparent text-slate-600 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900'
                                 }`}
                         >
                             {tab.icon}
@@ -161,7 +161,7 @@ export default function App() {
             </header>
 
             {/* ── Main Workspace ── */}
-            <main className="flex flex-1 flex-col lg:flex-row p-6 gap-6 max-w-7xl w-full mx-auto">
+            <main className="flex flex-1 flex-col lg:flex-row p-4 md:p-6 lg:p-8 gap-4 md:gap-6 max-w-7xl w-full mx-auto">
 
                 {/* === CPU VIEW === */}
                 {activeTab === 'CPU' && (
@@ -204,10 +204,12 @@ export default function App() {
                                 </div>
                             </div>
 
-                            <GanttChart results={cpuResults} revealedCount={revealedCount} />
+                            <div className="w-full overflow-x-auto whitespace-nowrap">
+                                <GanttChart results={cpuResults} revealedCount={revealedCount} />
+                            </div>
 
                             {/* CPU Results Map */}
-                            <div className="border border-slate-300 bg-white p-6 rounded-none">
+                            <div className="border border-slate-300 bg-white p-4 md:p-6 rounded-none w-full overflow-x-auto">
                                 <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-900">Telemetry: Turnaround & Wait</h3>
                                 <table className="w-full text-xs font-mono text-left">
                                     <thead>
@@ -303,9 +305,8 @@ export default function App() {
                                     <button type="submit" className="bg-slate-900 text-white px-3 py-1 text-xs font-bold uppercase hover:bg-slate-800 transition-colors cursor-pointer rounded-none border border-slate-900">Add</button>
                                 </form>
                             </div>
-
                         </aside>
-                        <section className="flex-1">
+                        <section className="flex-1 w-full overflow-x-auto whitespace-nowrap">
                             <MemoryGrid partitions={partitions} requests={memRequests} algorithm={memAlgo} />
                         </section>
                     </>
@@ -360,7 +361,7 @@ export default function App() {
                                 </form>
                             </div>
                         </aside>
-                        <section className="flex-1">
+                        <section className="flex-1 w-full overflow-x-auto whitespace-nowrap">
                             <DiskChart initialHead={initialHead} requests={trackRequests} algorithm={diskAlgo} />
                         </section>
                     </>

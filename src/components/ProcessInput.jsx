@@ -32,7 +32,7 @@ export default function ProcessInput({ onAdd }) {
                 Add Process
             </h2>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label className="mb-1 block text-xs text-slate-500">Name</label>
                     <input
