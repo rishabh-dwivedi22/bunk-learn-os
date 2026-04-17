@@ -8,6 +8,7 @@ import {
     calculateCLOOK 
 } from '../utils/DiskSchedulingLogic';
 import { Settings, BarChart3, List, ArrowRight, MoveHorizontal, Database } from 'lucide-react';
+import ModuleExplainer from './ModuleExplainer';
 
 export default function DiskScheduling() {
     const [requestInput, setRequestInput] = useState("98, 183, 37, 122, 14, 124, 65, 67");
@@ -36,6 +37,20 @@ export default function DiskScheduling() {
     }, [requestInput, initialHead, maxTrack, direction, algorithm]);
 
     const { sequence, movements, totalMovement } = result;
+
+    const explainerSteps = useMemo(() => {
+        if (!movements || movements.length === 0) return [];
+        return movements.map((m) => ({
+            reason: m.reason || '',
+            reasonHi: m.reasonHi || '',
+            context: {
+                'MOVEMENT': `Track ${m.from} → ${m.to}`,
+                'SEEK_DISTANCE': `|${m.to} - ${m.from}| = ${m.val}`,
+                'TYPE': m.isJump ? 'Circular Jump' : 'Standard Seek',
+                'STEP': `${m.step} / ${movements.length}`,
+            }
+        }));
+    }, [movements]);
 
     const chartHeight = 400;
     const paddingX = 40;
@@ -289,6 +304,11 @@ export default function DiskScheduling() {
                             </table>
                         </div>
                     </section>
+
+                    {/* Explainer Panel */}
+                    {movements.length > 0 && (
+                        <ModuleExplainer steps={explainerSteps} title="SEEK_LOG" />
+                    )}
                 </main>
             </div>
         </div>

@@ -31,3 +31,19 @@ body {
     background: #cbd5e1;
     border-radius: 2px;
 }
+
+/* ExplainerPanel reason text animation */
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-slide-in {
+    animation: fadeSlideIn 0.3s ease-out;
+}
