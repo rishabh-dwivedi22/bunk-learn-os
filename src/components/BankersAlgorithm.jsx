@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { calculateBankersAlgorithm } from '../utils/DeadlockLogic';
+import ModuleExplainer from './ModuleExplainer';
 
 export default function BankersAlgorithm() {
     const [numProcesses, setNumProcesses] = useState(5);
@@ -201,6 +202,11 @@ export default function BankersAlgorithm() {
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {/* Explainer Panel */}
+                    {results && results.steps && results.steps.length > 0 && (
+                        <ModuleExplainer steps={results.steps} title="SAFETY_LOG" />
                     )}
                 </div>
             </div>

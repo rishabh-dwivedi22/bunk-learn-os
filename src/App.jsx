@@ -7,6 +7,7 @@ import GanttChart from './components/GanttChart';
 import MemoryGrid from './components/MemoryGrid';
 import DiskScheduling from './components/DiskScheduling';
 import CalculationTable from './components/CalculationTable';
+import ExplainerPanel from './components/ExplainerPanel';
 import Footer from './components/Footer';
 import BankersAlgorithm from './components/BankersAlgorithm';
 
@@ -92,6 +93,12 @@ export default function App() {
     const handleReset = useCallback(() => {
         setIsPlaying(false);
         setRevealedCount(0);
+        clearInterval(timerRef.current);
+    }, []);
+
+    const handleStepChange = useCallback((newCount) => {
+        setRevealedCount(newCount);
+        setIsPlaying(false);
         clearInterval(timerRef.current);
     }, []);
 
@@ -205,6 +212,14 @@ export default function App() {
                                 <GanttChart results={cpuResults} revealedCount={revealedCount} />
                             </div>
 
+                            {/* EXPLAINER PANEL — Step-by-step decision log */}
+                            <ExplainerPanel
+                                results={cpuResults}
+                                revealedCount={revealedCount}
+                                onStepChange={handleStepChange}
+                                isPlaying={isPlaying}
+                            />
+
                             {/* CPU Results Map */}
                             <CalculationTable results={cpuResults} />
                         </section>
@@ -275,8 +290,10 @@ export default function App() {
                                 </form>
                             </div>
                         </aside>
-                        <section className="flex-1 w-full overflow-x-auto whitespace-nowrap">
-                            <MemoryGrid partitions={partitions} requests={memRequests} algorithm={memAlgo} />
+                        <section className="flex-1 w-full min-w-0 space-y-6">
+                            <div className="overflow-x-auto">
+                                <MemoryGrid partitions={partitions} requests={memRequests} algorithm={memAlgo} />
+                            </div>
                         </section>
                     </>
                 )}

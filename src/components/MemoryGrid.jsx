@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { calculateFirstFit, calculateBestFit } from '../utils/MemoryLogic';
+import ModuleExplainer from './ModuleExplainer';
 
 export default function MemoryGrid({ partitions, requests, algorithm }) {
     const [allocationData, setAllocationData] = useState({ memory: [], results: [] });
@@ -16,6 +17,20 @@ export default function MemoryGrid({ partitions, requests, algorithm }) {
 
     const { memory, results } = allocationData;
 
+    const explainerSteps = useMemo(() => {
+        if (!results || results.length === 0) return [];
+        return results.map((r, i) => ({
+            reason: r.reason || '',
+            reasonHi: r.reasonHi || '',
+            context: {
+                'REQUEST': `${r.id} (${r.size}K)`,
+                'STATUS': r.success ? '✅ ALLOCATED' : '❌ FAILED',
+                'PARTITION': r.allocatedTo || 'N/A',
+                'INT_FRAG': r.success ? `${r.internalFragmentation}K` : 'N/A',
+            }
+        }));
+    }, [results]);
+
     if (!memory.length) {
         return (
             <div className="flex h-32 items-center justify-center border border-slate-300 bg-white rounded-none text-xs text-slate-400 font-mono italic">
@@ -27,7 +42,8 @@ export default function MemoryGrid({ partitions, requests, algorithm }) {
     const totalMemory = memory.reduce((sum, p) => sum + p.size, 0);
 
     return (
-        <div className="space-y-6 min-w-[700px] lg:min-w-full">
+        <div className="space-y-6">
+          <div className="min-w-[700px] lg:min-w-full">
             <div className="w-full border border-slate-300 bg-white p-4 md:p-6 rounded-none">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-900">
@@ -146,6 +162,12 @@ export default function MemoryGrid({ partitions, requests, algorithm }) {
                         <span className="font-bold text-slate-900">NOTE:</span> Each partition can hold at most one process. Process size must be ≤ partition size.
                     </div>
                 </div>
+            )}
+            </div>
+
+            {/* Explainer Panel — outside scroll container for proper wrapping */}
+            {results.length > 0 && (
+                <ModuleExplainer steps={explainerSteps} title="ALLOCATION_LOG" />
             )}
         </div>
     );

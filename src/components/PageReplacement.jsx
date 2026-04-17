@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   calculateFIFO, 
   calculateLRU, 
@@ -6,6 +6,7 @@ import {
   calculateRAND, 
   calculateNRU 
 } from '../utils/PageReplacementLogic';
+import ModuleExplainer from './ModuleExplainer';
 
 export default function PageReplacement() {
   const [inputStr, setInputStr] = useState("7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1");
@@ -47,6 +48,20 @@ export default function PageReplacement() {
     }
     setResults(calculatedResults);
   };
+
+  const explainerSteps = useMemo(() => {
+    if (!results || !results.history) return [];
+    return results.history.map((step, idx) => ({
+      reason: step.reason || '',
+      reasonHi: step.reasonHi || '',
+      context: {
+        'PAGE': step.page,
+        'STATUS': step.status === 'Hit' ? '✅ HIT' : '❌ FAULT',
+        'FRAMES': `[${step.frames.filter(f => f !== null).join(', ')}]`,
+        'STEP': `${idx + 1} / ${results.history.length}`,
+      }
+    }));
+  }, [results]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -225,6 +240,11 @@ export default function PageReplacement() {
               </div>
             )}
           </div>
+
+          {/* Explainer Panel */}
+          {explainerSteps.length > 0 && (
+            <ModuleExplainer steps={explainerSteps} title="PAGE_LOG" />
+          )}
         </div>
       </div>
     </div>

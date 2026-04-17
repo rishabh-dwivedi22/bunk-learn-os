@@ -3,7 +3,7 @@
  * This module exports FCFS, SJF, RR, SRTF, HRRN, and LCN functions.
  * All algorithms take an array of processes: { id: 'P1', arrivalTime: 0, burstTime: 5 }
  * and return an array of scheduled execution blocks containing:
- * { id, startTime, completionTime, turnaroundTime, waitingTime, isIdle (optional) }
+ * { id, startTime, completionTime, turnaroundTime, waitingTime, isIdle (optional), reason, reasonHi }
  */
 
 /**
@@ -29,6 +29,8 @@ export function calculateFCFS(processes) {
                 completionTime: proc.arrivalTime,
                 burstTime: proc.arrivalTime - currentTime,
                 isIdle: true,
+                reason: `No process available. CPU idle until next arrival at t=${proc.arrivalTime}.`,
+                reasonHi: `Abhi koi bhi process ready nahi hai. CPU free baitha hai — jab tak next process t=${proc.arrivalTime} pe nahi aata, tab tak wait karega.`,
             });
             currentTime = proc.arrivalTime;
         }
@@ -42,6 +44,8 @@ export function calculateFCFS(processes) {
         // Waiting Time (WT) = Turnaround Time - Burst Time (time spent waiting in the queue)
         const waiting = turnaround - proc.burstTime;
 
+        const isFirst = results.filter(r => !r.isIdle).length === 0;
+
         results.push({
             id: proc.id,
             arrivalTime: proc.arrivalTime,
@@ -51,6 +55,12 @@ export function calculateFCFS(processes) {
             turnaroundTime: turnaround,
             waitingTime: waiting,
             isIdle: false,
+            reason: isFirst
+                ? `${proc.id} arrives first (t=${proc.arrivalTime}) — CPU is free, selected by FCFS.`
+                : `${proc.id} is next in FCFS queue (arrived t=${proc.arrivalTime}). Runs t=${start}→${completion}.`,
+            reasonHi: isFirst
+                ? `Dekho, ${proc.id} sabse pehle aaya t=${proc.arrivalTime} pe aur CPU bilkul free hai. FCFS mein rule simple hai — jo pehle aaye, usko pehle CPU milega. Toh ${proc.id} select!`
+                : `Ab queue mein agle number pe ${proc.id} hai (ye t=${proc.arrivalTime} pe aaya tha). FCFS mein order se kaam hota hai, toh ab ${proc.id} chalega t=${start} se t=${completion} tak.`,
         });
 
         currentTime = completion; // Update time for the next process
@@ -93,6 +103,11 @@ export function calculateSJF_NonPreemptive(processes) {
             const turnaround = completion - selected.arrivalTime;
             const waiting = turnaround - selected.burstTime;
 
+            // Build list of other ready processes for Hinglish detail
+            const othersStr = available.length > 1
+                ? available.map(p => `${p.id}(burst=${p.burstTime})`).join(', ')
+                : '';
+
             results.push({
                 id: selected.id,
                 arrivalTime: selected.arrivalTime,
@@ -102,6 +117,12 @@ export function calculateSJF_NonPreemptive(processes) {
                 turnaroundTime: turnaround,
                 waitingTime: waiting,
                 isIdle: false,
+                reason: available.length === 1
+                    ? `${selected.id} is the only ready process at t=${start}. Burst = ${selected.burstTime}.`
+                    : `${selected.id} has shortest burst (${selected.burstTime}) among ${available.length} ready processes at t=${start}.`,
+                reasonHi: available.length === 1
+                    ? `Is waqt t=${start} pe sirf ${selected.id} hi ready hai, koi aur option nahi. Iska burst ${selected.burstTime} hai. Seedha select!`
+                    : `t=${start} pe ${available.length} processes ready hain: ${othersStr}. SJF ka rule — sabse chhota burst wala pehle chalega. ${selected.id} ka burst ${selected.burstTime} sabse kam hai, isliye ye select hua!`,
             });
 
             // Mark the chosen process as done and move the clock forward
@@ -121,6 +142,8 @@ export function calculateSJF_NonPreemptive(processes) {
                 completionTime: nextArrival,
                 burstTime: nextArrival - currentTime,
                 isIdle: true,
+                reason: `No process available. CPU idle until next arrival at t=${nextArrival}.`,
+                reasonHi: `Koi process abhi ready nahi hai. CPU ko rukna padega jab tak next process t=${nextArrival} pe nahi aa jaata.`,
             });
             currentTime = nextArrival;
         }
@@ -160,6 +183,8 @@ export function calculateRoundRobin(processes, timeQuantum = 2) {
             completionTime: procs[0].arrivalTime,
             burstTime: procs[0].arrivalTime - currentTime,
             isIdle: true,
+            reason: `No process available. CPU idle until first arrival at t=${procs[0].arrivalTime}.`,
+            reasonHi: `Abhi tak koi process aaya hi nahi. CPU free baitha hai — pehla process t=${procs[0].arrivalTime} pe aayega, tab tak idle rahega.`,
         });
         currentTime = procs[0].arrivalTime;
     }
@@ -180,6 +205,8 @@ export function calculateRoundRobin(processes, timeQuantum = 2) {
 
             const start = currentTime;
             const completion = start + timeToRun;
+            const willComplete = currentProc.remainingBurst <= timeQuantum;
+            const remainAfter = currentProc.remainingBurst - timeToRun;
 
             results.push({
                 id: currentProc.id,
@@ -189,6 +216,12 @@ export function calculateRoundRobin(processes, timeQuantum = 2) {
                 startTime: start,
                 completionTime: completion,
                 isIdle: false,
+                reason: !willComplete
+                    ? `${currentProc.id} executes for quantum ${timeQuantum}. Remaining: ${remainAfter}.`
+                    : `${currentProc.id} completes final burst of ${currentProc.remainingBurst} (≤ quantum ${timeQuantum}).`,
+                reasonHi: !willComplete
+                    ? `${currentProc.id} ki baari aayi! Isko ${timeQuantum} units ka time quantum milega. Lekin iska kaam abhi poora nahi hua — ${remainAfter} units abhi baaki hain. Toh ${currentProc.id} queue ke peeche chala jayega, baad mein phir aayega.`
+                    : `${currentProc.id} ka bacha hua burst sirf ${currentProc.remainingBurst} hai, jo quantum ${timeQuantum} se kam ya barabar hai. Matlab ye apna poora kaam is baar mein khatam kar lega. ${currentProc.id} complete! 🎉`,
             });
 
             currentTime = completion;
@@ -237,6 +270,8 @@ export function calculateRoundRobin(processes, timeQuantum = 2) {
                     completionTime: nextArrival,
                     burstTime: nextArrival - currentTime,
                     isIdle: true,
+                    reason: `Queue empty. CPU idle until next arrival at t=${nextArrival}.`,
+                    reasonHi: `Queue khaali hai! Koi process line mein nahi hai. CPU wait karega jab tak koi naya process t=${nextArrival} pe arrive na ho jaaye.`,
                 });
                 currentTime = nextArrival;
 
@@ -295,7 +330,9 @@ export function calculateSRTF(processes) {
                     burstTime: prevProc.burstTime,
                     startTime: sliceStart,
                     completionTime: currentTime,
-                    isIdle: false
+                    isIdle: false,
+                    reason: `${lastProcessId} runs t=${sliceStart}→${currentTime}. Preempted by ${selected.id} (remaining ${selected.remainingBurst} < ${prevProc.remainingBurst}).`,
+                    reasonHi: `${lastProcessId} t=${sliceStart} se t=${currentTime} tak chala. Lekin ruko — ${selected.id} aa gaya aur iska bacha hua burst ${selected.remainingBurst} hai, jo ${lastProcessId} ke ${prevProc.remainingBurst} se kam hai! SRTF mein hamesha kam remaining wale ko priority milti hai. Toh ${lastProcessId} ko hatao, ${selected.id} ko lagao!`,
                 });
                 sliceStart = currentTime;
             } else if (lastProcessId === null) {
@@ -325,7 +362,9 @@ export function calculateSRTF(processes) {
                     isIdle: false,
                     finalCompletion: completionTime,
                     turnaroundTime: turnaround,
-                    waitingTime: waiting
+                    waitingTime: waiting,
+                    reason: `${selected.id} completes execution at t=${completionTime}. Total burst: ${selected.burstTime}.`,
+                    reasonHi: `${selected.id} ne apna poora kaam khatam kar liya t=${completionTime} pe! Iska total burst ${selected.burstTime} tha — sab execute ho gaya. ✅`,
                 });
 
                 // Update all previous slices of this process with the same metrics
@@ -349,7 +388,9 @@ export function calculateSRTF(processes) {
                     burstTime: prevProc.burstTime,
                     startTime: sliceStart,
                     completionTime: currentTime,
-                    isIdle: false
+                    isIdle: false,
+                    reason: `${lastProcessId} runs t=${sliceStart}→${currentTime}. No more ready processes.`,
+                    reasonHi: `${lastProcessId} t=${sliceStart} se t=${currentTime} tak chala. Ab koi aur process ready nahi hai — CPU ko kuch der rukna padega.`,
                 });
                 lastProcessId = null;
             }
@@ -364,6 +405,8 @@ export function calculateSRTF(processes) {
                     completionTime: nextArrival,
                     burstTime: nextArrival - currentTime,
                     isIdle: true,
+                    reason: `CPU idle — no processes available. Next arrival at t=${nextArrival}.`,
+                    reasonHi: `CPU bilkul free hai, koi process line mein nahi. Next process t=${nextArrival} pe aayega — tab tak CPU idle rahega.`,
                 });
                 currentTime = nextArrival;
                 sliceStart = currentTime;
@@ -410,6 +453,10 @@ export function calculateHRRN(processes) {
             const completion = start + selected.burstTime;
             const turnaround = completion - selected.arrivalTime;
             const waiting = turnaround - selected.burstTime;
+            const wt = start - selected.arrivalTime;
+
+            // Build detailed ratio comparison for Hinglish
+            const ratioDetails = available.map(p => `${p.id}=${p.responseRatio.toFixed(2)}`).join(', ');
 
             results.push({
                 id: selected.id,
@@ -420,6 +467,12 @@ export function calculateHRRN(processes) {
                 turnaroundTime: turnaround,
                 waitingTime: waiting,
                 isIdle: false,
+                reason: available.length === 1
+                    ? `${selected.id} is the only ready process at t=${start}. RR = ${selected.responseRatio.toFixed(2)}.`
+                    : `${selected.id} wins with response ratio ${selected.responseRatio.toFixed(2)} = (${wt} + ${selected.burstTime}) / ${selected.burstTime}.`,
+                reasonHi: available.length === 1
+                    ? `t=${start} pe sirf ${selected.id} hi ready hai. Iska response ratio ${selected.responseRatio.toFixed(2)} hai. Koi competition nahi — seedha select!`
+                    : `HRRN mein sabse zyada response ratio wala jeetega! Formula: (wait + burst) / burst. Sabke ratios: ${ratioDetails}. ${selected.id} ka wait = ${wt}, burst = ${selected.burstTime}, toh ratio = (${wt} + ${selected.burstTime}) / ${selected.burstTime} = ${selected.responseRatio.toFixed(2)} — ye sabse zyada hai, toh ${selected.id} select! 🏆`,
             });
 
             selected.isCompleted = true;
@@ -436,6 +489,8 @@ export function calculateHRRN(processes) {
                     completionTime: nextArrival,
                     burstTime: nextArrival - currentTime,
                     isIdle: true,
+                    reason: `No process available. CPU idle until next arrival at t=${nextArrival}.`,
+                    reasonHi: `Koi process ready nahi hai abhi. CPU idle rahega jab tak next process t=${nextArrival} pe nahi aa jaata.`,
                 });
                 currentTime = nextArrival;
             } else {
@@ -488,7 +543,9 @@ export function calculateLCN(processes) {
                     burstTime: prevProc.burstTime,
                     startTime: sliceStart,
                     completionTime: currentTime,
-                    isIdle: false
+                    isIdle: false,
+                    reason: `${lastProcessId} runs t=${sliceStart}→${currentTime}. ${selected.id} has less CPU time (${selected.completedBurst} < ${prevProc.completedBurst}).`,
+                    reasonHi: `${lastProcessId} t=${sliceStart} se t=${currentTime} tak chala. Ab dekhte hain — LCN mein jisne sabse kam CPU time use kiya ho usko priority milti hai. ${selected.id} ne sirf ${selected.completedBurst} units use kiye jo ${lastProcessId} ke ${prevProc.completedBurst} se kam hai. Toh ab ${selected.id} chalega!`,
                 });
                 sliceStart = currentTime;
             } else if (lastProcessId === null) {
@@ -516,7 +573,9 @@ export function calculateLCN(processes) {
                     isIdle: false,
                     finalCompletion: completionTime,
                     turnaroundTime: turnaround,
-                    waitingTime: waiting
+                    waitingTime: waiting,
+                    reason: `${selected.id} completes at t=${completionTime}. All ${selected.burstTime} burst units executed.`,
+                    reasonHi: `${selected.id} ka kaam poora ho gaya t=${completionTime} pe! Iske total ${selected.burstTime} burst units sab execute ho chuke hain. ✅`,
                 });
 
                 results.forEach(res => {
@@ -538,7 +597,9 @@ export function calculateLCN(processes) {
                     burstTime: prevProc.burstTime,
                     startTime: sliceStart,
                     completionTime: currentTime,
-                    isIdle: false
+                    isIdle: false,
+                    reason: `${lastProcessId} runs t=${sliceStart}→${currentTime}. No more ready processes.`,
+                    reasonHi: `${lastProcessId} t=${sliceStart} se t=${currentTime} tak chala. Ab koi aur process ready queue mein nahi hai.`,
                 });
                 lastProcessId = null;
             }
@@ -553,6 +614,8 @@ export function calculateLCN(processes) {
                     completionTime: nextArrival,
                     burstTime: nextArrival - currentTime,
                     isIdle: true,
+                    reason: `CPU idle — no processes available. Next arrival at t=${nextArrival}.`,
+                    reasonHi: `CPU free hai — koi process abhi available nahi. Agle process ka wait hai jo t=${nextArrival} pe aayega.`,
                 });
                 currentTime = nextArrival;
                 sliceStart = currentTime;
