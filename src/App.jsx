@@ -111,6 +111,7 @@ export default function App() {
             setMemRequests([]);
             setCpuResults([]);
             handleReset();
+            // Ye baaki tabs ko clearSignal bhejega
             setResetKey(prev => prev + 1);
         }
     }, [handleReset]);
@@ -340,26 +341,27 @@ export default function App() {
                 {/* === DISK VIEW === */}
                 {activeTab === 'Disk' && (
                     <div className="flex-1 overflow-x-auto">
-                        <DiskScheduling key={resetKey} />
+                        <DiskScheduling clearSignal={resetKey} />
                     </div>
                 )}
 
                 {/* === DEADLOCK VIEW === */}
                 {activeTab === 'Deadlock' && (
                     <div className="flex-1">
-                        <BankersAlgorithm key={resetKey} />
+                        <BankersAlgorithm clearSignal={resetKey} />
                     </div>
                 )}
 
                 {/* === PAGE REPLACEMENT VIEW === */}
                 {activeTab === 'Page' && (
                     <div className="flex-1">
-                        <PageReplacement key={resetKey} />
+                        <PageReplacement clearSignal={resetKey} />
                     </div>
                 )}
 
             </main>
             <Footer />
         </div>
+        
     );
 }
