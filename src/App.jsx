@@ -341,21 +341,24 @@ export default function App() {
                 {/* === DISK VIEW === */}
                 {activeTab === 'Disk' && (
                     <div className="flex-1 overflow-x-auto">
-                        <DiskScheduling />
+                        <DiskScheduling
+                            Key={resetKey} />
                     </div>
                 )}
 
                 {/* === DEADLOCK VIEW === */}
                 {activeTab === 'Deadlock' && (
                     <div className="flex-1">
-                        <BankersAlgorithm />
+                        <BankersAlgorithm
+                            Key={resetKey} />
                     </div>
                 )}
 
                 {/* === PAGE REPLACEMENT VIEW === */}
                 {activeTab === 'Page' && (
                     <div className="flex-1">
-                        <PageReplacement />
+                        <PageReplacement
+                            Key={resetKey} />
                     </div>
                 )}
 
