@@ -27,6 +27,7 @@ export default function App() {
 
     // --- OS SYSTEM CLOCK STATE ---
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [resetKey, setResetKey] = useState(0);
 
     // --- CPU STATE ---
     const [processes, setProcesses] = useState([
@@ -53,7 +54,7 @@ export default function App() {
     const [newPartitionSize, setNewPartitionSize] = useState('');
     const [newMemReqSize, setNewMemReqSize] = useState('');
 
-    // --- OS System Clock Effect (New Addition) ---
+    // --- OS System Clock Effect  ---
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
@@ -103,7 +104,7 @@ export default function App() {
         clearInterval(timerRef.current);
     }, []);
 
-    // --- Global "Format OS" Function (New Addition) ---
+    // --- Global "Format OS" Function  ---
     const handleGlobalReset = useCallback(() => {
         if (window.confirm("Are you sure you want to Format the OS? This will wipe all CPU and Memory data.")) {
             setProcesses([]);
@@ -111,6 +112,7 @@ export default function App() {
             setMemRequests([]);
             setCpuResults([]);
             handleReset();
+            setResetKey(prev => + 1);
         }
     }, [handleReset]);
 
